@@ -69,7 +69,8 @@ app.post("/addCart/:u_id/:p_id", async (req, res) => {
   let f_user = await foodUsers.findByPk(user_id);
   try {
     if (f_product) {
-      if (true) {
+      if (f_user) {
+       debugger
         let f_Cart = await foodCart.create({
           p_id: product_id,
           u_id: user_id,
@@ -77,6 +78,8 @@ app.post("/addCart/:u_id/:p_id", async (req, res) => {
           quantity: f_product.dataValues.Quantity,
           total_price: f_product.dataValues.Price,
         });
+        console.log("---------------------------------------------------------------");
+        console.log(f_Cart.dataValues);
         res.status(200).json(f_Cart);
       } else {
         throw "User Not found,Please Login";
