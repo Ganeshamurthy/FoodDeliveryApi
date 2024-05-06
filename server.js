@@ -245,7 +245,6 @@ app.post("/create-checkout-session", async (req, res) => {
         currency: "INR",
         product_data: {
           name: product.p_name,
-          images: [`http://localhost:8080/getImage?id=${product.p_id}`],
         },
         unit_amount: product.total_price * 100,
       },
