@@ -9,7 +9,7 @@ app.use(cors());
 const multer = require("multer");
 
 const stripe = require("stripe")(
-  "sk_test_51Mbj8eSAej2N1Wqjun6hYB6mHrPbUaw6N1p078IZ4c2pa1L1QEOtvYDj9bLi5DUUpNZG4HSEvbQSt7BpyCmliSYK008tDDpvG4"
+  "sk_test_51PDOVWSESsyTouXCswhna8S7rAomWfNb3CnbyU0CFB0iMo7pdZaVlbDC6utMRuVzLDC832CIZxLaCvGzh0XKwcs100KWrtHZI9"
 );
 app.use(express.static("public"));
 
