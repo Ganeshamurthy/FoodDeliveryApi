@@ -9,7 +9,7 @@ app.use(cors());
 const multer = require("multer");
 
 const stripe = require("stripe")(
-  "sk_test_51PDOVWSESsyTouXCswhna8S7rAomWfNb3CnbyU0CFB0iMo7pdZaVlbDC6utMRuVzLDC832CIZxLaCvGzh0XKwcs100KWrtHZI9"
+  "sk_test_51PDgC7SA0v2O1lhuqC7fV4qR2XASgOi4SgyaCFJx85FfHLqB8PTo2b9rmZTs0KLruaXUOBa152Xxf1tgbONX0xYc000b2hE2lC"
 );
 app.use(express.static("public"));
 
@@ -124,10 +124,10 @@ app.delete("/deleteCart/:id/:u_id", async (req, res) => {
     await foodCart.destroy({
       where: {
         u_id: u_id,
-        p_id:cart_id
+        p_id: cart_id,
       },
     });
-    
+
     res.json({ message: "item removed frm cart", total_price: total });
   } catch (e) {
     console.log(e);
@@ -136,19 +136,19 @@ app.delete("/deleteCart/:id/:u_id", async (req, res) => {
   }
 });
 
-app.get('/truncate/:uid',async(req,res)=>{
-  try{
+app.get("/truncate/:uid", async (req, res) => {
+  try {
     await sequelize.sync();
     await foodCart.destroy({
       where: {
-        u_id: req['params']['uid'],
+        u_id: req["params"]["uid"],
       },
     });
-    res.json({"Message":"Sucess"})
-  } catch(e){
-    res.status(400).json({"Error":"Something went wrong"})
+    res.json({ Message: "Sucess" });
+  } catch (e) {
+    res.status(400).json({ Error: "Something went wrong" });
   }
-})
+});
 //update cart
 let service = new UpdateCartService();
 // sample model of endpoint for update "http://localhost:8080/updateCart?p_id=3&qty=6&u_id=3"
@@ -188,11 +188,34 @@ app.post("/loginAuth", async (req, res) => {
 
 // Endpoint to create a new user
 app.post("/createUser", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name, address, CityCode, State, city } = req.body;
   try {
     foodUsers.sync();
     // Create a new user entry in the User table
-    const newUser = await foodUsers.create({ email, password });
+    const newUser = await foodUsers.create({
+      email,
+      password,
+      name,
+      address,
+      CityCode,
+      State,
+      city,
+    });
+
+    const customer = await stripe.customers.create({
+      name: name,
+      address: {
+        line1: address,
+        postal_code: CityCode,
+        city: city,
+        state: State,
+        country: "In",
+      },
+      email: email,
+      currency: "INR",
+    });
+
+    console.log(customer);
 
     res
       .status(201)
@@ -238,29 +261,39 @@ async function calculatePrice(id) {
 }
 
 app.post("/create-checkout-session", async (req, res) => {
-  const { Product } = req["body"];
-  const lineItems = Product.map((product) => 
-    ({
-      price_data: {
-        currency: "INR",
-        product_data: {
-          name: product.p_name,
-        },
-        unit_amount: product.total_price * 100,
+  const { Product,id } = req["body"];
+  const user_details = await foodUsers.findByPk(id);
+  const customer = await stripe.customers.create({
+    name: user_details.dataValues.name,
+    address: {
+      line1: user_details.dataValues.address,
+      postal_code: user_details.dataValues.CityCode,
+      city: user_details.dataValues.city,
+      state: user_details.dataValues.State,
+      country: "IN",
+    },
+  });
+
+  const lineItems = Product.map((product) => ({
+    price_data: {
+      currency: "INR",
+      product_data: {
+        name: product.p_name,
       },
-      quantity:product.quantity
-    }));
-  console.log(lineItems);
+      unit_amount: product.total_price * 100,
+    },
+    quantity: product.quantity,
+  }));
 
   const session = await stripe.checkout.sessions.create({
+    customer: customer.id,
     line_items: lineItems,
     mode: "payment",
     success_url: `http://localhost:4200/`,
     cancel_url: `http://localhost:4200/confirmation?success=false`,
   });
-
-  console.log(session);
-  res.json({ url: session.url });
+console.log(session);
+  res.json({ url: session.url});
 });
 
 app.listen(8080, () => {

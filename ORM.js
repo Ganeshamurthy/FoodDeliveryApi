@@ -28,13 +28,35 @@ try {
         autoIncrement: true,
         primaryKey: true
     },
+    name:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
+    address:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
+    city:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
+    CityCode:{
+        type:DataTypes.INTEGER,
+        allowNull:false
+    },
+    State:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
     email:
     {
-        type:DataTypes.STRING
+        type:DataTypes.STRING,
+        allowNull:false
     },
     password:
     {
-        type:DataTypes.STRING
+        type:DataTypes.STRING,
+        allowNull:false
     },
     token:
     {
